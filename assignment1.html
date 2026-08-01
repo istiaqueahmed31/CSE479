@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Converter</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .converter {
+            width: 420px;
+            padding: 24px;
+            background: white;
+            border: 1px solid #d5d9df;
+            border-radius: 16px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            margin-top: 0;
+            text-align: center;
+            color: #1f2937;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #aaa;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .swap-button {
+            width: 100%;
+            margin: 4px 0 16px;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #e5e7eb;
+            color: #222;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .swap-button:hover {
+            background: #d1d5db;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+        }
+
+        #convertButton {
+            background: #2563eb;
+        }
+
+        #resetButton {
+            background: #6b7280;
+        }
+
+        .buttons button:hover {
+            opacity: 0.88;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 10px;
+            background: #f3f6fb;
+            text-align: center;
+        }
+
+        #result {
+            margin: 0;
+            font-size: 28px;
+            color: #111827;
+        }
+
+        #formula {
+            margin: 8px 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        #message {
+            min-height: 20px;
+            margin: 12px 0 0;
+            color: crimson;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .converter {
+                width: 92%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="converter">
+        <h1>Temperature Converter</h1>
+        <p class="subtitle">Convert Celsius to Fahrenheit or Fahrenheit to Celsius</p>
+
+        <div class="field">
+            <label for="temperature">Temperature</label>
+            <input
+                type="number"
+                id="temperature"
+                placeholder="Enter temperature"
+                step="any"
+            >
+        </div>
+
+        <div class="field">
+            <label for="fromUnit">Convert From</label>
+            <select id="fromUnit">
+                <option value="celsius">Celsius (°C)</option>
+                <option value="fahrenheit">Fahrenheit (°F)</option>
+            </select>
+        </div>
+
+        <button class="swap-button" id="swapButton">⇅ Swap Units</button>
+
+        <div class="field">
+            <label for="toUnit">Convert To</label>
+            <select id="toUnit">
+                <option value="fahrenheit">Fahrenheit (°F)</option>
+                <option value="celsius">Celsius (°C)</option>
+            </select>
+        </div>
+
+        <div class="buttons">
+            <button id="convertButton">Convert</button>
+            <button id="resetButton">Reset</button>
+        </div>
+
+        <p id="message"></p>
+
+        <section class="result-box">
+            <h2 id="result">Result: --</h2>
+            <p id="formula">Choose units and enter a temperature.</p>
+        </section>
+    </main>
+
+    <script>
+        const temperatureInput = document.getElementById("temperature");
+        const fromUnit = document.getElementById("fromUnit");
+        const toUnit = document.getElementById("toUnit");
+        const result = document.getElementById("result");
+        const formula = document.getElementById("formula");
+        const message = document.getElementById("message");
+
+        function convertTemperature() {
+            const value = Number(temperatureInput.value);
+
+            if (temperatureInput.value.trim() === "" || Number.isNaN(value)) {
+                message.innerText = "Please enter a valid temperature.";
+                result.innerText = "Result: --";
+                formula.innerText = "Choose units and enter a temperature.";
+                return;
+            }
+
+            message.innerText = "";
+
+            let convertedValue;
+            let resultSymbol;
+            let formulaText;
+
+            if (fromUnit.value === toUnit.value) {
+                convertedValue = value;
+                resultSymbol = fromUnit.value === "celsius" ? "°C" : "°F";
+                formulaText = "The selected units are the same.";
+            }
+            else if (
+                fromUnit.value === "celsius" &&
+                toUnit.value === "fahrenheit"
+            ) {
+                convertedValue = (value * 9 / 5) + 32;
+                resultSymbol = "°F";
+                formulaText = "Formula: °F = (°C × 9/5) + 32";
+            }
+            else {
+                convertedValue = (value - 32) * 5 / 9;
+                resultSymbol = "°C";
+                formulaText = "Formula: °C = (°F − 32) × 5/9";
+            }
+
+            result.innerText =
+                "Result: " + formatNumber(convertedValue) + " " + resultSymbol;
+
+            formula.innerText = formulaText;
+        }
+
+        function formatNumber(number) {
+            return Number(number.toFixed(2)).toString();
+        }
+
+        function swapUnits() {
+            const oldFromUnit = fromUnit.value;
+
+            fromUnit.value = toUnit.value;
+            toUnit.value = oldFromUnit;
+
+            if (temperatureInput.value.trim() !== "") {
+                convertTemperature();
+            }
+        }
+
+        function resetConverter() {
+            temperatureInput.value = "";
+            fromUnit.value = "celsius";
+            toUnit.value = "fahrenheit";
+            result.innerText = "Result: --";
+            formula.innerText = "Choose units and enter a temperature.";
+            message.innerText = "";
+            temperatureInput.focus();
+        }
+
+        document
+            .getElementById("convertButton")
+            .addEventListener("click", convertTemperature);
+
+        document
+            .getElementById("resetButton")
+            .addEventListener("click", resetConverter);
+
+        document
+            .getElementById("swapButton")
+            .addEventListener("click", swapUnits);
+
+        temperatureInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                convertTemperature();
+            }
+        });
+
+        fromUnit.addEventListener("change", function () {
+            if (temperatureInput.value.trim() !== "") {
+                convertTemperature();
+            }
+        });
+
+        toUnit.addEventListener("change", function () {
+            if (temperatureInput.value.trim() !== "") {
+                convertTemperature();
+            }
+        });
+    </script>
+
+</body>
+</html>

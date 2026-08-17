@@ -1,0 +1,1 @@
+ALTER TABLE public.orders ADD COLUMN business_name text NULL;

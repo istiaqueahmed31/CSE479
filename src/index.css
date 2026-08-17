@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Miskal International — Natural Wholesale Palette */
+    --background: 40 33% 98%;
+    --foreground: 0 0% 18%;
+
+    --card: 60 20% 97%;
+    --card-foreground: 0 0% 18%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 18%;
+
+    /* Deep Olive Green */
+    --primary: 82 44% 25%;
+    --primary-foreground: 40 33% 98%;
+
+    /* Soft Sage Green */
+    --secondary: 102 25% 56%;
+    --secondary-foreground: 0 0% 18%;
+
+    --muted: 60 10% 93%;
+    --muted-foreground: 0 0% 40%;
+
+    /* Warm Sand / Beige */
+    --accent: 38 30% 80%;
+    --accent-foreground: 0 0% 18%;
+
+    /* Muted Mustard / Gold — CTA */
+    --cta: 43 55% 49%;
+    --cta-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 82 44% 25%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 60 20% 97%;
+    --sidebar-foreground: 0 0% 18%;
+    --sidebar-primary: 82 44% 25%;
+    --sidebar-primary-foreground: 40 33% 98%;
+    --sidebar-accent: 38 30% 80%;
+    --sidebar-accent-foreground: 0 0% 18%;
+    --sidebar-border: 40 15% 88%;
+    --sidebar-ring: 82 44% 25%;
+  }
+
+  .dark {
+    --background: 0 0% 8%;
+    --foreground: 40 33% 95%;
+
+    --card: 0 0% 12%;
+    --card-foreground: 40 33% 95%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 40 33% 95%;
+
+    --primary: 82 44% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 102 20% 30%;
+    --secondary-foreground: 40 33% 95%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 38 20% 25%;
+    --accent-foreground: 40 33% 95%;
+
+    --cta: 43 55% 49%;
+    --cta-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 82 44% 35%;
+
+    --sidebar-background: 0 0% 10%;
+    --sidebar-foreground: 40 33% 95%;
+    --sidebar-primary: 82 44% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 38 20% 25%;
+    --sidebar-accent-foreground: 40 33% 95%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 82 44% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Google Sans', 'Product Sans', 'Noto Sans Bengali', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Google Sans', 'Product Sans', 'Noto Sans Bengali', system-ui, sans-serif;
+  }
+}

@@ -19,6 +19,7 @@
 3. [Design tokens](#3-design-tokens)
 4. [Pattern library](#4-pattern-library)
    - [4.1 Animated icons that morph](#41-animated-icons-that-morph)
+   - [4.2 Component micro-interactions](#42-component-micro-interactions)
 5. [Accessibility rules](#5-accessibility-rules)
 6. [Agent checklist](#6-agent-checklist)
 7. [Sources](#7-sources)
@@ -53,6 +54,13 @@
    outer glow; inactive elements are muted.
 6. **Dark-first, high contrast.** (SHOULD) Deep navy backgrounds, raised dark surfaces, near-white
    foreground, a single bright accent.
+7. **Nothing vanishes.** (MUST) Elements move to where they go instead of disappearing: labels float
+   up, deleted items fly to the bin, closed photos return to their thumbnail. Remaining content closes
+   gaps with motion, never by jumping.
+8. **Direct manipulation follows 1:1.** (MUST) While the user drags, the element tracks the finger or
+   pointer exactly; animation only starts on release (spring home or commit).
+9. **Arrive with weight.** (SHOULD) Things that land (pins, popovers, toasts) drop in fast and settle with
+   1–2 small bounces, then reveal secondary info (labels, tooltips).
 
 ---
 
@@ -104,6 +112,9 @@ MAY use a very faint square grid texture.
 | `ease-out`         | `cubic-bezier(0.22, 1, 0.36, 1)` | Entrances, completion pops |
 | `ease-spring`      | `cubic-bezier(0.34, 1.56, 0.64, 1)` or spring (stiffness ≈ 300, damping ≈ 15) | Release actions, ~34% overshoot |
 | `linear`           | `linear` | Progress sweeps |
+| `ease-in-out-strong` | `cubic-bezier(0.83, 0, 0.17, 1)` | Line/track fills (S-curve) |
+| `spring-gentle`    | spring, stiffness ≈ 200, damping ≈ 20 (≈ 5–10% overshoot) | Width changes, list reflow, return-to-origin |
+| `bounce-drop`      | land in 200 ms, then 2 decaying bounces, settle by ~1000 ms | Pins, dropped items |
 
 ---
 
@@ -143,6 +154,33 @@ Apply the same principle to any other stateful icon (e.g. menu ⇄ close, heart 
 - Strip of 5 small keyframe tiles with a moving scrubber line; passed frames get an accent border + glow.
 - Outlined spec caption pill (e.g. `TRIANGLE → 2 BARS · 300 ms`).
 
+### 4.2 Component micro-interactions
+
+*Source: reference reel "More smooth details, in slow-mo" (Part 5 · 6 new details, see §7).*
+
+**Rules**
+- Apply these behaviors whenever the project contains the matching component. They MUST use the
+  tokens in §3 and follow principles 1, 2, 7, 8 and 9 in §2.
+- Animate layout-safe properties (transform, opacity, width/height via a layout-animation tool or
+  FLIP technique). Never let content jump.
+
+**The six component behaviors**
+
+| # | Component | Behavior | Timing / easing |
+|---|---|---|---|
+| 01 | **Copy button** ("Morph, don't swap") | Next to a read-only value (e.g. a share link). On click: the copy icon morphs into a check, the label changes "Copy" → "Copied", the button fills with `accent` (text `on-accent`) and **widens by ~36 px** with a small spring overshoot so the longer label fits. Revert to "Copy" after ~2 s (assumption: revert not shown). | width: `spring-gentle`, settles in ~800 ms; icon morph `duration-toggle` |
+| 02 | **Text field with floating label** ("Float, don't vanish") | On focus, the placeholder label does **not** disappear: it shrinks **20 → 14 px**, moves up into the top of the field and turns `accent`. A focus **underline draws outward from the center** in `accent`. The label stays up while the field has a value. | label `ease-out` with tiny settle, ~800 ms total at ¼ speed (≈ 200–300 ms real); line `ease-standard` |
+| 03 | **Checkout / stepper** ("Draw, fill, wake") | Steps (e.g. Cart → Shipping → Payment) joined by a line. On "Continue": the connector line **draws/fills** toward the next step, the current step's ring fills into a solid `accent` circle with a check, then the **next step wakes up** (outlined ring + dot, label goes from `fg-muted` to `fg`). Primary button shows a press ripple. | line fills in 400 ms, `ease-in-out-strong` (S-curve) |
+| 04 | **Map pin** ("Drop, then bounce") | The pin drops from above onto the location, **lands in 200 ms**, then makes **2 decaying bounces**; a ripple ring expands from the landing point and fades; after it settles a label/tooltip (e.g. "Pickup here") pops in beside it. | `bounce-drop` (~1000 ms total) |
+| 05 | **Delete from list** ("Fly into the bin") | Clicking × on a row: the row lifts, shrinks and **flies toward the trash/bin icon**, whose lid tilts open to receive it and closes. Rows below **slide up to close the gap** with a slight overshoot. Never just remove the row. | fly 400 ms; list reflow `spring-gentle` (~1000 ms to settle). SHOULD offer Undo. |
+| 06 | **Photo viewer / lightbox** ("Follow, then return") | Tapping a grid thumbnail expands it into the viewer (shared-element transition). Dragging the open photo makes it **follow the pointer 1:1** and scale down slightly; on release past a threshold it **springs home** into its original thumbnail position; below the threshold it springs back to full view. | drag: no easing (1:1); return: `spring-gentle` (~1 s to settle) |
+
+**Showcase layout (optional)** — same as §4.1, with the hero tile replaced by the live component and the
+keyframe strip replaced by a **motion-curve panel**: a dark card titled with the animated property
+(e.g. `BUTTON WIDTH`, `LABEL SIZE`, `LINE FILL`, `PIN HEIGHT`, `LIST MOVES UP`, `PHOTO SCALE`), a dashed
+target line, a glowing `accent` curve drawn in sync with the animation, a dot at the current point, and
+the total time in the corner (e.g. `TIME · 800 ms`).
+
 ---
 
 ## 5. Accessibility rules
@@ -165,6 +203,8 @@ Before finishing any UI task, confirm:
 - [ ] State changes morph instead of swapping (§2.1).
 - [ ] Multi-step actions show start → progress → done/error (§2.2).
 - [ ] Any icon matching §4.1 is implemented as described there, in both directions.
+- [ ] Any component matching §4.2 (copy button, text field, stepper, map pin, list delete, photo viewer)
+      follows its described behavior; nothing vanishes or jumps (§2.7), drags follow 1:1 (§2.8).
 - [ ] Reduced motion, accessible labels and contrast are handled (§5).
 - [ ] No unnecessary dependency was added just for animation.
 
@@ -175,3 +215,4 @@ Before finishing any UI task, confirm:
 | Pattern | Source | Notes |
 |---|---|---|
 | 4.1 Animated icons that morph | Reel "Icons that feel alive" (41 s, portrait) | Derived from frames only; audio not analyzed. Some hex values approximate due to video compression; exact font unknown (Inter is a close match). |
+| 4.2 Component micro-interactions | Reel "More smooth details, in slow-mo" — Part 5 · 6 new details (51 s, portrait) | Same visual style as 4.1 (tokens unchanged). Frames only; audio not analyzed. Durations are the values shown on screen; curve shapes read from the on-screen graphs. Copy-button revert delay is an assumption. |

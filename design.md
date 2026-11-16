@@ -22,6 +22,7 @@
    - [4.2 Component micro-interactions](#42-component-micro-interactions)
    - [4.3 Feedback & input micro-interactions](#43-feedback--input-micro-interactions)
    - [4.4 Action, loading & gesture micro-interactions](#44-action-loading--gesture-micro-interactions)
+   - [4.5 Premium surfaces: the 6-layer card](#45-premium-surfaces-the-6-layer-card)
 5. [Accessibility rules](#5-accessibility-rules)
 6. [Agent checklist](#6-agent-checklist)
 7. [Sources](#7-sources)
@@ -71,6 +72,10 @@
     favorites), animate a token traveling to that destination and acknowledge it there (badge, pulse).
 13. **Cascade, don't dump.** (SHOULD) Content that loads as a group (lists, grids, cards) enters in a
     staggered cascade, never all at once in a single frame.
+14. **Premium = layered restraint.** (SHOULD) Hero surfaces (cards, featured panels, product tiles) look
+    expensive through several subtle stacked layers (gradient, faint pattern, minimal content, rim
+    light, moving glare, two shadows), each nearly invisible alone. Prefer fewer elements and lower
+    opacities over loud effects.
 
 ---
 
@@ -112,6 +117,7 @@ MAY use a very faint square grid texture.
 - Radius: large, soft corners ("squircle"). Tiles/cards ≈ 22–24% of their size; buttons ≈ 12–16 px; pills fully rounded.
 - Surfaces: `surface` fill + 1 px `surface-border` + subtle top inner highlight + large soft drop shadow.
 - Glow (active): `0 0 16–24px` of `accent` at ~35–50% opacity.
+- Premium surfaces (hero cards): use the full 6-layer recipe in §4.5.
 
 ### 3.4 Motion
 
@@ -239,6 +245,38 @@ the total time in the corner (e.g. `TIME · 800 ms`).
 | 05 | **Card flip** ("Flip with depth") | Flipping a two-sided card (e.g. flashcard: "Hola" ⇄ "Hello"): rotate **180° on the Y axis** with perspective, and **lift the card ~8% (scale 1.08) at mid-flip** with a stronger shadow, then set it back down. Swap the face content exactly at 90° (backface hidden). The active face gets an `accent` border. | 600 ms, `ease-in-out-strong` (S-curve) |
 | 06 | **Notification bell** ("Swing, then settle") | When a new notification arrives, the bell **swings like a pendulum** from its top pivot starting at **±24°**, each swing smaller until it rests; the clapper lags slightly behind; small sound-wave arcs pulse beside it; the `badge` count pops in/increments. | `swing-settle` (~760 ms); badge pop `ease-spring` |
 
+### 4.5 Premium surfaces: the 6-layer card
+
+*Source: reference reel "Why this card looks expensive" (6 layers, see §7).*
+
+A static-design recipe (plus one interactive layer) for making a card or panel look premium. The
+demo is a payment card, but the same stack applies to any hero surface: pricing cards, membership
+cards, featured product tiles, profile cards, dashboard summary panels.
+
+**Rules**
+- Hero/featured surfaces SHOULD be built from these six layers, **in this order from bottom to top**.
+  Ordinary cards use only layers 1, 3 and 6 (lighter version) to keep the hierarchy clear.
+- Each layer must stay subtle: if a single layer is obviously visible on its own, it is too strong.
+- Use rounded corners (≈ 12–16 px on a card of ~340 × 214 px, i.e. a credit-card 1.586 : 1 ratio
+  when the surface represents a card).
+
+**The six layers**
+
+| Layer | Name | Recipe | Spec |
+|---|---|---|---|
+| 1 | **The base** ("A deep gradient") | Diagonal linear gradient, top-left → bottom-right, from a lighter navy through mid navy to near-black navy. Never a flat fill. | 3 stops ≈ `#23365A` → `#1A2A47` → `#0E1628` (approx.), angle ≈ 135° |
+| 2 | **The pattern** ("Barely there") | A thin-line decorative pattern (e.g. concentric arcs radiating from one corner, contour lines, or a fine guilloche) in white or `fg`. It should be felt rather than seen. | **8% opacity**, 1 px lines |
+| 3 | **The content** ("Only four things") | Limit the surface to **four elements** (on a payment card: chip, contactless icon, masked number `•••• •••• •••• 4821`, holder name). Everything aligns to **one shared left edge**; generous padding (≈ 20–24 px). Small uppercase, letter-spaced labels for secondary text. | 4 elements · 1 left edge |
+| 4 | **The rim light** ("A rim of light") | A 1 px inner border in white, slightly stronger along the top edge (as if lit from above), to separate the surface from the dark background. | **1 px · 28% white** |
+| 5 | **The glare** ("Light that moves") | A soft diagonal white sheen (linear/radial gradient band) across the surface that **moves with tilt**: follows pointer position on desktop (with a 3D tilt of a few degrees, perspective ≈ 800–1000 px) and device orientation on mobile; slowly drifts or stays fixed when neither is available. | **18% white** at peak, follows tilt; `spring-gentle` smoothing |
+| 6 | **The shadow** ("Two shadows") | Two stacked drop shadows: a tight contact shadow plus a large soft ambient one, both dark navy/black (not grey). | **8 px + 30 px** blur, e.g. `0 4px 8px rgba(0,0,0,.35)` + `0 18px 30px rgba(0,0,0,.45)`, optional faint `accent` ambient glow |
+
+**Accessibility & performance**
+- Keep all text on the surface at WCAG AA contrast against the darkest gradient stop under it.
+- The glare/tilt is decorative: disable it (static sheen) under reduced motion, and don't let it
+  shift the content layer.
+- Animate only transform/opacity for the glare; don't repaint the gradient or shadows on every frame.
+
 ---
 
 ## 5. Accessibility rules
@@ -268,6 +306,8 @@ Before finishing any UI task, confirm:
 - [ ] Any component matching §4.4 (add to cart, submit button, list load, swipe card, card flip,
       notification bell) follows its described behavior; loading/success happen inside the trigger
       element and moved items show where they went (§2.12).
+- [ ] Hero/featured surfaces use the 6-layer recipe in §4.5 (gradient, 8% pattern, ≤4 aligned
+      elements, 1 px rim, tilt glare, two shadows); ordinary cards stay lighter.
 - [ ] Reduced motion, accessible labels and contrast are handled (§5).
 - [ ] No unnecessary dependency was added just for animation.
 
@@ -281,3 +321,4 @@ Before finishing any UI task, confirm:
 | 4.2 Component micro-interactions | Reel "More smooth details, in slow-mo" — Part 5 · 6 new details (51 s, portrait) | Same visual style as 4.1 (tokens unchanged). Frames only; audio not analyzed. Durations are the values shown on screen; curve shapes read from the on-screen graphs. Copy-button revert delay is an assumption. |
 | 4.3 Feedback & input micro-interactions | Reel "More smooth details, in slow-mo" — Part 4 · 6 new details (45 s, portrait) | Same visual style. Frames only; audio not analyzed. Durations/staggers are the values shown on screen; `danger`/`warning` hex values approximate. |
 | 4.4 Action, loading & gesture micro-interactions | Reel "More smooth details, in slow-mo" — Part 2 · 6 new details (51 s, portrait) | Same visual style. Frames only; audio not analyzed. Values shown on screen; error state and submit-button restore delay are assumptions; `badge` hex approximate. |
+| 4.5 Premium surfaces: the 6-layer card | Reel "Why this card looks expensive" (52 s, portrait) | Same visual style. Frames only; audio not analyzed. Opacities, rim and shadow sizes are the values shown on screen; gradient hex values sampled from frames (approx.); shadow offsets, radius, perspective and "ordinary cards use fewer layers" are my additions. |

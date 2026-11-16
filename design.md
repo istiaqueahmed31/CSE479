@@ -1,140 +1,177 @@
-# Design Spec — Animated Icon Micro-interactions
+# design.md — Reusable Design System & Motion Guidelines
 
-> Source: reference reel (41 s, 720×1280 portrait, 30 fps) titled **"Icons that feel alive."**
-> This document captures the visual language and the six icon animations shown. It is a generic,
-> framework-agnostic spec that can be applied to any web or app project.
-
----
-
-## 1. Core idea
-
-**"Morph, don't swap."** Icons never hard-cut from one state to another. Every state change is a
-short, continuous animation where parts of the old icon *become* the new one (a triangle becomes two
-bars, an arrow becomes a progress ring, a sun becomes a moon). This makes the UI feel responsive and
-tells the user *what happened*.
-
-Principles:
-1. **Continuity** – shared geometry is morphed, not replaced.
-2. **Tell the story** – multi-step actions (download) show every stage: start → progress → done.
-3. **Short and purposeful** – 300–600 ms for toggles, up to ~1.2 s for processes.
-4. **Physical feel** – use springs/overshoot for "release" actions (unlock, send).
-5. **Glow = active** – the active/accent state is signaled by cyan-blue color and soft outer glow.
+> **For AI coding agents (Claude Code, etc.) and developers:** this file defines the design rules
+> for the project it is placed in. It is **language- and framework-agnostic**. When you build or change
+> any user interface in this project, **follow these rules** and translate them into the project's own
+> stack (web, mobile, desktop; any language or framework).
+>
+> - Rules marked **MUST** are required. **SHOULD** is the default unless the project has a good reason not to.
+> - If the project already has its own brand or design system, keep its brand colors and fonts, but still
+>   apply the **principles, motion rules and patterns** from this file.
+> - New patterns are added as new numbered sections under **Pattern library** (§4). Each pattern lists
+>   the source it was derived from.
 
 ---
 
-## 2. Visual language
+## Contents
+1. [How to apply this file](#1-how-to-apply-this-file)
+2. [Global design principles](#2-global-design-principles)
+3. [Design tokens](#3-design-tokens)
+4. [Pattern library](#4-pattern-library)
+   - [4.1 Animated icons that morph](#41-animated-icons-that-morph)
+5. [Accessibility rules](#5-accessibility-rules)
+6. [Agent checklist](#6-agent-checklist)
+7. [Sources](#7-sources)
 
-### 2.1 Color palette (sampled from the video)
+---
 
-| Token              | Hex        | Use |
+## 1. How to apply this file
+
+1. Before building UI, read §2 (principles) and §3 (tokens).
+2. Define the tokens in §3 in the project's native way (CSS variables, Tailwind theme, SCSS variables,
+   a theme object, Flutter `ThemeData`, SwiftUI/Compose theme, XAML resources, etc.). **Never** hard-code
+   colors, durations or easings in components; reference the tokens.
+3. When a UI element matches a pattern in §4 (e.g. a play button, theme toggle, search, send, download,
+   lock), implement it **as described in that pattern**.
+4. Use whatever animation tool fits the stack: CSS transitions/keyframes, a JS animation library,
+   Lottie, SVG animation, or native platform animation APIs. Do not add a heavy dependency if the
+   platform can do it natively.
+5. Finish with the checklist in §6.
+
+---
+
+## 2. Global design principles
+
+1. **Morph, don't swap.** (MUST) When an element changes state, animate continuously from the old state
+   to the new one. Shared geometry is transformed, not hard-cut or cross-faded.
+2. **Tell the whole story.** (MUST) Multi-step actions show every stage: start → in progress → done
+   (or error). Never jump from "idle" straight to "done" without feedback.
+3. **Short and purposeful motion.** (MUST) Toggles 300–600 ms; processes may run longer but must show
+   progress. No animation exists just for decoration.
+4. **Physical feel.** (SHOULD) "Release" actions (send, unlock, open) use a spring with slight overshoot.
+5. **Glow means active.** (SHOULD) The active/accent state is shown with the accent color plus a soft
+   outer glow; inactive elements are muted.
+6. **Dark-first, high contrast.** (SHOULD) Deep navy backgrounds, raised dark surfaces, near-white
+   foreground, a single bright accent.
+
+---
+
+## 3. Design tokens
+
+### 3.1 Color
+
+| Token              | Value      | Use |
 |--------------------|------------|-----|
-| `--bg-deep`        | `#01060C`  | Page background, bottom of the vignette |
-| `--bg`             | `#050D1D`  | Page background, main |
-| `--bg-raised`      | `#081022`  | Subtle surfaces / grid area |
-| `--tile`           | `#121A2C`  | Icon tile fill (to `#131D31` at center) |
-| `--tile-border`    | `#1E2A40` (approx.) | 1 px tile stroke, slightly lighter than fill |
-| `--icon`           | `#FDFDFD`  | Primary icon glyphs (near white) |
-| `--icon-muted`     | `#9599A6`  | Inactive / not-yet-reached frames in the timeline strip |
-| `--accent`         | `#37BAF4`  | Accent blue: headline highlight word, progress ring, check, pills |
-| `--accent-2`       | `#2FBCF1` / `#42B9EC` | Accent variants used across the ring gradient |
-| `--sun`            | `#F5BD4F` (approx.) | Sun body and rays in the dark-mode icon |
+| `bg-deep`          | `#01060C`  | Outer background / bottom of vignette |
+| `bg`               | `#050D1D`  | Main background |
+| `bg-raised`        | `#081022`  | Subtle surfaces, sections |
+| `surface`          | `#121A2C`  | Cards, tiles, buttons (up to `#131D31` at center) |
+| `surface-border`   | `#1E2A40`  | 1 px border on surfaces (approx.) |
+| `fg`               | `#FDFDFD`  | Primary text and icons |
+| `fg-muted`         | `#9599A6`  | Secondary text, inactive icons |
+| `accent`           | `#37BAF4`  | Highlights, active state, progress, links, focus |
+| `accent-alt`       | `#2FBCF1` / `#42B9EC` | Accent gradient stops |
+| `warm`             | `#F5BD4F`  | Warm highlight (e.g. sun/light state) (approx.) |
+| `on-accent`        | `#05101F`  | Text on solid accent fills |
 
-Background has a very faint square grid and a radial vignette (lighter near the center tile, darker
-at the edges). The accent blue is also used as a **soft outer glow** (`box-shadow`/`filter: drop-shadow`)
-on active elements.
+Backgrounds SHOULD use a radial vignette (lighter behind the focal element, darker at the edges) and
+MAY use a very faint square grid texture.
 
-### 2.2 Typography
-- Font: geometric/grotesk sans (SF Pro Display / Inter look). Use **Inter** or the system UI stack.
-- **Eyebrow** (e.g. `01 · PLAY / PAUSE`): ~10–11 px, bold, uppercase, wide letter-spacing (~0.15em), muted white.
-- **Headline** (e.g. "Morph, don't **swap**."): ~28–32 px on mobile, bold, tight tracking; last word
-  in `--accent`. The accent word types/fades in after the first words.
-- **Pill labels** (`SLOW-MO ¼x`, `6 ICONS · NO SWAPS`): ~9–10 px, bold uppercase, dark text on solid accent fill, full radius.
-- **Spec caption** (e.g. `TRIANGLE → 2 BARS · 300 ms`): ~13–14 px, semibold uppercase, accent text inside
-  an outlined accent pill with a faint glow.
-- **Credit/footer**: tiny, muted.
+### 3.2 Typography
+- Family: geometric/grotesk sans. Default **Inter**, fallback to the platform system UI font.
+- **Eyebrow / overline**: 10–11 px, bold, uppercase, letter-spacing ≈ 0.15em, `fg-muted`.
+- **Headline**: 28–32 px mobile / 40–56 px desktop, bold, tight tracking. The key word of the headline
+  MAY be colored `accent` (e.g. "Morph, don't **swap**.").
+- **Pill / tag**: 9–10 px, bold uppercase, `on-accent` on solid `accent`, fully rounded.
+- **Caption / spec label**: 13–14 px, semibold uppercase, `accent` text in an outlined accent pill with faint glow.
+- **Body**: 15–16 px, regular, `fg` at ~85% opacity.
 
-### 2.3 Shapes and surfaces
-- **Icon tile**: squircle / rounded square, radius ≈ 22–24% of its size (≈ 40 px on a 180 px tile),
-  fill `--tile`, 1 px lighter border, inner highlight at the top edge, large soft drop shadow.
-- Small tiles (grid on intro screen): ~88 px, same style.
-- **Timeline strip**: 5 small rounded tiles (~44 px) showing keyframes of the animation. Passed frames
-  get an accent border + glow; a thin vertical white **scrubber line** moves across them.
-- **Progress bar (top)**: 6 thin segments across the top of the screen, one per scene; the current one
-  is filled in accent (story/stories style).
+### 3.3 Shape, depth and glow
+- Radius: large, soft corners ("squircle"). Tiles/cards ≈ 22–24% of their size; buttons ≈ 12–16 px; pills fully rounded.
+- Surfaces: `surface` fill + 1 px `surface-border` + subtle top inner highlight + large soft drop shadow.
+- Glow (active): `0 0 16–24px` of `accent` at ~35–50% opacity.
 
----
+### 3.4 Motion
 
-## 3. Screen layout (mobile, portrait)
-
-```
-┌────────────────────────────┐
-│  ▬ ▬ ▬ ▬ ▬ ▬   (scene progress) │
-│      01 · PLAY / PAUSE      │  eyebrow
-│   Morph, don't  swap.       │  headline (last word accent)
-│        [SLOW-MO ¼x]         │  speed pill
-│      ┌──────────────┐       │
-│      │              │       │
-│      │   BIG ICON   │       │  hero tile (~50% width)
-│      │              │       │
-│      └──────────────┘       │
-│  [▢][▢][▢][▢][▢]  |scrubber │  keyframe timeline strip
-│                             │
-│  ( TRIANGLE → 2 BARS · 300 ms ) │  spec caption pill
-│                             │
-│        • @credit            │
-└────────────────────────────┘
-```
-
-Intro screen: headline "Icons that **feel alive.**" over a 3×2 grid of small tiles that each loop
-their animation, with a pill `6 ICONS · NO SWAPS`.
-
-Scene flow: each scene first plays at `1x` (pill reads `1x`), then replays at `SLOW-MO ¼x` while the
-scrubber moves across the keyframe strip.
+| Token              | Value | Use |
+|--------------------|-------|-----|
+| `duration-fast`    | 150 ms | Hover, press, reduced-motion fallback |
+| `duration-toggle`  | 300 ms | Simple toggles (play/pause) |
+| `duration-draw`    | 400 ms | Stroke draw/undraw, fly-out |
+| `duration-morph`   | 600 ms | Complex shape morphs (sun → moon) |
+| `duration-process` | ~1.2 s | Short multi-stage processes (minimum; real progress can be longer) |
+| `ease-standard`    | `cubic-bezier(0.65, 0, 0.35, 1)` | Toggles, morphs |
+| `ease-out`         | `cubic-bezier(0.22, 1, 0.36, 1)` | Entrances, completion pops |
+| `ease-spring`      | `cubic-bezier(0.34, 1.56, 0.64, 1)` or spring (stiffness ≈ 300, damping ≈ 15) | Release actions, ~34% overshoot |
+| `linear`           | `linear` | Progress sweeps |
 
 ---
 
-## 4. Icon animations (the six scenes)
+## 4. Pattern library
 
-| # | Scene / icon | Headline | Animation | Duration / spec |
-|---|---|---|---|---|
-| 01 | **Play / Pause** | Morph, don't **swap.** | Play triangle splits and squares off into two pause bars (and back). | `TRIANGLE → 2 BARS · 300 ms` |
-| 02 | **Download** | Tell the whole **story.** | Arrow drops into tray, collapses to a dot, dot becomes a progress ring counting 0% → 100% with a percentage label, ring fills into a solid accent circle with a white **check**. | `ARROW → RING → TICK · 1.2 s` |
-| 03 | **Dark mode** | Sun into **moon.** | 8 sun rays retract into the body while a shadow disc slides over it to carve a crescent; color shifts yellow → white; small accent sparkle stars pop in. | `8 RAYS RETRACT · 600 ms` |
-| 04 | **Search** | Turn into the **exit.** | Magnifier circle "undraws" (stroke-dashoffset), handle rotates and a second stroke draws in to form an **X** (close search). | `CIRCLE UNDRAWS · 400 ms` |
-| 05 | **Send** | Let it **fly.** | Paper plane flies out up-right with motion-blur trail, then springs back into place from the bottom-left. | `FLIES OUT 400 ms · SPRINGS BACK` |
-| 06 | **Unlock** | Spring it **open.** | Shackle lifts +18 px and swings open with overshoot; keyhole turns accent blue. | `SHACKLE +18 px · 34% OVERSHOOT` |
+### 4.1 Animated icons that morph
 
-### Easing guidance
-- Toggles (play/pause, sun/moon, search/close): `cubic-bezier(0.65, 0, 0.35, 1)` (ease-in-out).
-- Progress: linear for the ring sweep, ease-out for the final fill + check pop (scale 0.6 → 1.08 → 1).
-- Springs (send return, unlock): spring with ~34% overshoot, e.g. CSS
-  `cubic-bezier(0.34, 1.56, 0.64, 1)` or a physics spring (stiffness ≈ 300, damping ≈ 15).
+*Source: reference reel "Icons that feel alive" (see §7).*
 
----
+**Rules**
+- Icons that represent a **state** or **action with an outcome** MUST be animated vector icons (SVG or
+  native vector paths), not static icon-font glyphs or bitmaps, so their parts can morph and draw.
+- Style: stroke-based, round caps and joins, 2–2.5 px stroke at 24 px, `fg` color; active parts in `accent`.
+- Each animated icon SHOULD expose: `state` (e.g. `playing`, `dark`, `open`, `searching`),
+  `progress` (0–1, where relevant) and `size`.
+- Icons MUST animate in both directions (e.g. pause → play reverses the morph).
 
-## 5. General implementation guidance
+**The six icon behaviors**
 
-- **Icons**: build each animated icon as a stroke-based **vector (SVG)** with round caps/joins and a
-  consistent 2–2.5 px stroke at 24 px, so parts can be morphed, drawn and undrawn. Static icon fonts
-  or bitmap icons cannot do this.
-- **Techniques**:
-  - Path morphing for shape-to-shape changes (play → pause, sun → moon).
-  - Stroke draw/undraw (`stroke-dasharray` / `stroke-dashoffset` or equivalent) for search → close and the progress ring.
-  - Transforms (translate / rotate / scale) with spring easing for send and unlock.
-  - Any animation tool works: CSS transitions/keyframes, a JS animation library, Lottie, or native platform animation APIs.
-- **Component API** (suggested): one component per icon with a `state` input (e.g. `playing`,
-  `dark`, `open`, `searching`), a `progress` input (0–1) for download, and a `size` input.
-- **Design tokens**: define the palette in §2.1 as reusable tokens/variables so the accent color and
-  surfaces can be re-themed per product.
-- **Accessibility**: update the accessible label with the state ("Play" / "Pause"), never rely on
-  animation alone to convey meaning, and respect the user's reduced-motion setting by replacing
-  morphs with a quick cross-fade (≤150 ms).
-- **Typical uses**: media players (01), file downloads/uploads (02), theme toggles (03), search bars
-  (04), send/submit buttons in chat and forms (05), lock/unlock, privacy or login states (06).
+| # | Icon | Transition | Duration / easing |
+|---|---|---|---|
+| 01 | **Play ⇄ Pause** | The play triangle splits and squares off into two pause bars; reverse on toggle. | `duration-toggle`, `ease-standard` |
+| 02 | **Download** | Arrow drops into the tray → collapses to a dot → dot grows into a progress ring that sweeps 0 → 100% with a % label → ring fills into a solid `accent` circle with a white check (pop: scale 0.6 → 1.08 → 1). | ≥ `duration-process`; ring `linear`, check `ease-out` |
+| 03 | **Theme: Sun ⇄ Moon** | 8 sun rays retract into the body while a shadow disc slides over it to carve a crescent; color shifts `warm` → `fg`; small `accent` sparkle stars pop in. | `duration-morph`, `ease-standard` |
+| 04 | **Search ⇄ Close** | The magnifier circle undraws (stroke-dashoffset), the handle rotates and a second stroke draws in to form an X. | `duration-draw`, `ease-standard` |
+| 05 | **Send** | Paper plane flies out up-right with a short motion trail, then springs back into place from the bottom-left. | out `duration-draw`, return `ease-spring` |
+| 06 | **Lock → Unlock** | Shackle lifts +18 px (at 24 px scale ≈ +3 px) and swings open with ~34% overshoot; keyhole turns `accent`. | `ease-spring` |
+
+**Where to use**: media players (01), downloads/uploads/exports (02), theme toggles (03), search bars
+(04), send/submit in chat and forms (05), lock/unlock, privacy, password visibility or login states (06).
+Apply the same principle to any other stateful icon (e.g. menu ⇄ close, heart ⇄ liked, copy ⇄ copied).
+
+**Showcase layout (optional, for demo/landing sections)**
+- Story-style segmented progress bar at the top (one segment per item, current one in `accent`).
+- Eyebrow (`01 · PLAY / PAUSE`) → headline with accent word → small pill (`1x` / `SLOW-MO ¼x`).
+- Large hero tile (~50% width) with the animated icon.
+- Strip of 5 small keyframe tiles with a moving scrubber line; passed frames get an accent border + glow.
+- Outlined spec caption pill (e.g. `TRIANGLE → 2 BARS · 300 ms`).
 
 ---
 
-## 6. Open questions / assumptions
-- Audio was not analyzed (only frames); any narration is not reflected here.
-- Exact hex values for the tile border and sun yellow are approximate (compressed video).
-- Exact font is not identifiable from frames; Inter is a close match.
+## 5. Accessibility rules
+
+- MUST respect the user's reduced-motion setting: replace morphs, springs and fly-outs with a quick
+  cross-fade (`duration-fast`) or an instant change.
+- MUST update the accessible label/name when an icon's state changes ("Play" → "Pause",
+  "Switch to dark mode" → "Switch to light mode").
+- MUST NOT rely on animation or color alone to convey meaning; pair with a label, tooltip or text.
+- Progress MUST be exposed to assistive tech (e.g. a progress role/value) and completion announced.
+- Text and icons MUST meet WCAG AA contrast against their background (`fg` on `bg` and `accent` on `bg` do).
+- Interactive targets SHOULD be at least 44 × 44 px; focus states MUST be visible (use `accent` glow ring).
+
+---
+
+## 6. Agent checklist
+
+Before finishing any UI task, confirm:
+- [ ] Colors, durations and easings come from the tokens in §3 (no hard-coded values).
+- [ ] State changes morph instead of swapping (§2.1).
+- [ ] Multi-step actions show start → progress → done/error (§2.2).
+- [ ] Any icon matching §4.1 is implemented as described there, in both directions.
+- [ ] Reduced motion, accessible labels and contrast are handled (§5).
+- [ ] No unnecessary dependency was added just for animation.
+
+---
+
+## 7. Sources
+
+| Pattern | Source | Notes |
+|---|---|---|
+| 4.1 Animated icons that morph | Reel "Icons that feel alive" (41 s, portrait) | Derived from frames only; audio not analyzed. Some hex values approximate due to video compression; exact font unknown (Inter is a close match). |

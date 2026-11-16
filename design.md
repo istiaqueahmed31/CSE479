@@ -21,6 +21,7 @@
    - [4.1 Animated icons that morph](#41-animated-icons-that-morph)
    - [4.2 Component micro-interactions](#42-component-micro-interactions)
    - [4.3 Feedback & input micro-interactions](#43-feedback--input-micro-interactions)
+   - [4.4 Action, loading & gesture micro-interactions](#44-action-loading--gesture-micro-interactions)
 5. [Accessibility rules](#5-accessibility-rules)
 6. [Agent checklist](#6-agent-checklist)
 7. [Sources](#7-sources)
@@ -66,6 +67,10 @@
     reaction emojis, list items), offset each by 70–100 ms so the eye reads them in order.
 11. **Feedback while typing.** (SHOULD) Inputs give live, graded feedback as the user types (strength,
     validity, count) instead of only on submit.
+12. **Show where it went.** (MUST) When an action moves something to another place (cart, folder,
+    favorites), animate a token traveling to that destination and acknowledge it there (badge, pulse).
+13. **Cascade, don't dump.** (SHOULD) Content that loads as a group (lists, grids, cards) enters in a
+    staggered cascade, never all at once in a single frame.
 
 ---
 
@@ -89,6 +94,7 @@
 | `danger`           | `#F07A4A`  | Errors, "weak"/"too short" states (approx.) |
 | `warning`          | `#E8C66A`  | "Fair"/caution states (approx.) |
 | `success`          | = `accent` | "Strong"/verified states use the accent blue, not green |
+| `badge`            | `#EF4565`  | Notification/count badges (approx.) |
 
 Backgrounds SHOULD use a radial vignette (lighter behind the focal element, darker at the edges) and
 MAY use a very faint square grid texture.
@@ -125,6 +131,7 @@ MAY use a very faint square grid texture.
 | `bounce-drop`      | land in 200 ms, then 2 decaying bounces, settle by ~1000 ms | Pins, dropped items |
 | `stagger-tight`    | 70 ms | Offset between dense sibling items (digits, emojis) |
 | `stagger-loose`    | 100 ms | Offset between larger sibling items (stars, cards) |
+| `swing-settle`     | decaying oscillation from ±24°, settles in ~760 ms | Attention shakes (bell, alert icons) |
 
 ---
 
@@ -211,6 +218,27 @@ the total time in the corner (e.g. `TIME · 800 ms`).
 | 05 | **To-do / checklist** ("Draw, strike, sink") | Checking an item: the checkbox fills `accent` and the **check mark draws in**, a **strike-through line draws across** the label left → right and the text dims to `fg-muted`, then the item **sinks to the bottom** of the list while the others slide up. Unchecking reverses (item returns, strike undraws). | check + strike **470 ms**; reorder `ease-in-out-strong` / `spring-gentle`, ~1 s to settle |
 | 06 | **Reactions picker** ("Pop, grow, fly") | Long-press/hover on a message opens a pill of emojis that **pop in staggered**. The hovered emoji **grows to 1.6×** and lifts; neighbors stay normal. On select, the emoji **flies** from the picker onto the message bubble's corner and lands as a small badge; the picker collapses. | pop-in `stagger-tight` (70 ms); hover scale 1.6× `ease-spring`; fly + land `spring-gentle` (~1 s) |
 
+### 4.4 Action, loading & gesture micro-interactions
+
+*Source: reference reel "More smooth details, in slow-mo" (Part 2 · 6 new details, see §7).*
+
+**Rules**
+- Apply these behaviors whenever the project contains the matching component, using the tokens in §3
+  and principles 1, 2, 4, 8, 12 and 13 in §2.
+- Loading and success states MUST live **inside the element that triggered them** (the button becomes
+  the spinner, then the check), not in a separate overlay.
+
+**The six behaviors**
+
+| # | Component | Behavior | Timing / easing |
+|---|---|---|---|
+| 01 | **Add to cart** ("Show where it went") | Pressing "Add to cart" on a product: a copy of the product image (or a dot of its color) **flies in an arc** (rises then falls, like a thrown ball) from the product to the cart icon, leaving a short fading trail. On arrival the cart icon pulses with an `accent` ring and its **badge count increments +1** with a pop. | arc 500 ms (height follows a bell curve: up `ease-out`, down `ease-in`); badge pop `ease-spring` |
+| 02 | **Submit button** ("Morph, don't swap") | On click the pill button **shrinks in width 260 → 64 px** into a circle while the label fades out; the circle becomes a **spinner** (arc rotating, `accent`); on success the spinner fills into a solid `accent` circle and a **check draws in**. On error, use `danger` and a short shake, then restore the label. Restore to the original button after ~1.5–2 s if the user stays on the page (assumption). | width 270 ms `ease-standard`; check draw `duration-draw` |
+| 03 | **List load** ("Cascade, don't dump") | When a list's data arrives, rows **fade in and slide up ~8–12 px one after another** from top to bottom. Use skeleton rows before data arrives, then replace them in the same cascade. | `stagger-tight` (70 ms apart); each row `ease-out`, whole list ~630 ms |
+| 04 | **Swipe away card** ("Follow, then fling") | Cards in a stack. While dragging, the top card **follows the finger 1:1** and **tilts up to ~12°** in the drag direction; an action badge (e.g. ✓ / ✕) fades in on the card. Released past a distance/velocity threshold, it **flicks off-screen** with its release velocity and the next card scales up into place; below the threshold it springs back to center. | drag 1:1; fling ~400 ms accelerating (`ease-in`), total ~770 ms; return `spring-gentle` |
+| 05 | **Card flip** ("Flip with depth") | Flipping a two-sided card (e.g. flashcard: "Hola" ⇄ "Hello"): rotate **180° on the Y axis** with perspective, and **lift the card ~8% (scale 1.08) at mid-flip** with a stronger shadow, then set it back down. Swap the face content exactly at 90° (backface hidden). The active face gets an `accent` border. | 600 ms, `ease-in-out-strong` (S-curve) |
+| 06 | **Notification bell** ("Swing, then settle") | When a new notification arrives, the bell **swings like a pendulum** from its top pivot starting at **±24°**, each swing smaller until it rests; the clapper lags slightly behind; small sound-wave arcs pulse beside it; the `badge` count pops in/increments. | `swing-settle` (~760 ms); badge pop `ease-spring` |
+
 ---
 
 ## 5. Accessibility rules
@@ -237,6 +265,9 @@ Before finishing any UI task, confirm:
       follows its described behavior; nothing vanishes or jumps (§2.7), drags follow 1:1 (§2.8).
 - [ ] Any component matching §4.3 (star rating, OTP input, accordion, password strength, checklist,
       reactions) follows its described behavior; sibling items are staggered (§2.10).
+- [ ] Any component matching §4.4 (add to cart, submit button, list load, swipe card, card flip,
+      notification bell) follows its described behavior; loading/success happen inside the trigger
+      element and moved items show where they went (§2.12).
 - [ ] Reduced motion, accessible labels and contrast are handled (§5).
 - [ ] No unnecessary dependency was added just for animation.
 
@@ -249,3 +280,4 @@ Before finishing any UI task, confirm:
 | 4.1 Animated icons that morph | Reel "Icons that feel alive" (41 s, portrait) | Derived from frames only; audio not analyzed. Some hex values approximate due to video compression; exact font unknown (Inter is a close match). |
 | 4.2 Component micro-interactions | Reel "More smooth details, in slow-mo" — Part 5 · 6 new details (51 s, portrait) | Same visual style as 4.1 (tokens unchanged). Frames only; audio not analyzed. Durations are the values shown on screen; curve shapes read from the on-screen graphs. Copy-button revert delay is an assumption. |
 | 4.3 Feedback & input micro-interactions | Reel "More smooth details, in slow-mo" — Part 4 · 6 new details (45 s, portrait) | Same visual style. Frames only; audio not analyzed. Durations/staggers are the values shown on screen; `danger`/`warning` hex values approximate. |
+| 4.4 Action, loading & gesture micro-interactions | Reel "More smooth details, in slow-mo" — Part 2 · 6 new details (51 s, portrait) | Same visual style. Frames only; audio not analyzed. Values shown on screen; error state and submit-button restore delay are assumptions; `badge` hex approximate. |

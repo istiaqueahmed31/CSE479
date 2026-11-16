@@ -1,8 +1,8 @@
 # Design Spec — Animated Icon Micro-interactions
 
 > Source: reference reel (41 s, 720×1280 portrait, 30 fps) titled **"Icons that feel alive."**
-> This document captures the visual language and the six icon animations shown, so they can be
-> rebuilt in this project (React + Vite + Tailwind + shadcn/ui, `lucide-react` already installed).
+> This document captures the visual language and the six icon animations shown. It is a generic,
+> framework-agnostic spec that can be applied to any web or app project.
 
 ---
 
@@ -107,25 +107,30 @@ scrubber moves across the keyframe strip.
 ### Easing guidance
 - Toggles (play/pause, sun/moon, search/close): `cubic-bezier(0.65, 0, 0.35, 1)` (ease-in-out).
 - Progress: linear for the ring sweep, ease-out for the final fill + check pop (scale 0.6 → 1.08 → 1).
-- Springs (send return, unlock): spring with ~34% overshoot, e.g. framer-motion
-  `{ type: "spring", stiffness: 300, damping: 15 }` or CSS `cubic-bezier(0.34, 1.56, 0.64, 1)`.
+- Springs (send return, unlock): spring with ~34% overshoot, e.g. CSS
+  `cubic-bezier(0.34, 1.56, 0.64, 1)` or a physics spring (stiffness ≈ 300, damping ≈ 15).
 
 ---
 
-## 5. Implementation notes for this project
+## 5. General implementation guidance
 
-- Stack already present: React, Tailwind, shadcn/ui, `lucide-react`. Lucide icons are static, so the
-  animated icons should be **custom inline SVGs** (stroke-based, `stroke-linecap="round"`, 2–2.5 px stroke).
-- Recommended: add `framer-motion` for path morphing, springs and `AnimatePresence`. Pure CSS
-  (`stroke-dasharray`/`stroke-dashoffset`, `transform`, `transition`) is enough for search, unlock and send.
-- Suggested component: `src/components/icons/AnimatedIcon/` with one component per icon
-  (`PlayPauseIcon`, `DownloadIcon`, `ThemeToggleIcon`, `SearchCloseIcon`, `SendIcon`, `LockIcon`),
-  each taking a `state` prop (or `progress` for download) and a `size` prop.
-- Add the palette to `tailwind.config.ts` / CSS variables in `src/index.css` as listed in §2.1.
-- Accessibility: keep `aria-label` updated with the state ("Play" / "Pause"), and respect
-  `prefers-reduced-motion` by switching to a quick cross-fade (≤150 ms).
-- Natural fits in the site: theme toggle (03), chatbot send button (05), search bar (04),
-  file/download buttons (02), media players (01), login/unlock states (06).
+- **Icons**: build each animated icon as a stroke-based **vector (SVG)** with round caps/joins and a
+  consistent 2–2.5 px stroke at 24 px, so parts can be morphed, drawn and undrawn. Static icon fonts
+  or bitmap icons cannot do this.
+- **Techniques**:
+  - Path morphing for shape-to-shape changes (play → pause, sun → moon).
+  - Stroke draw/undraw (`stroke-dasharray` / `stroke-dashoffset` or equivalent) for search → close and the progress ring.
+  - Transforms (translate / rotate / scale) with spring easing for send and unlock.
+  - Any animation tool works: CSS transitions/keyframes, a JS animation library, Lottie, or native platform animation APIs.
+- **Component API** (suggested): one component per icon with a `state` input (e.g. `playing`,
+  `dark`, `open`, `searching`), a `progress` input (0–1) for download, and a `size` input.
+- **Design tokens**: define the palette in §2.1 as reusable tokens/variables so the accent color and
+  surfaces can be re-themed per product.
+- **Accessibility**: update the accessible label with the state ("Play" / "Pause"), never rely on
+  animation alone to convey meaning, and respect the user's reduced-motion setting by replacing
+  morphs with a quick cross-fade (≤150 ms).
+- **Typical uses**: media players (01), file downloads/uploads (02), theme toggles (03), search bars
+  (04), send/submit buttons in chat and forms (05), lock/unlock, privacy or login states (06).
 
 ---
 

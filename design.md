@@ -20,6 +20,7 @@
 4. [Pattern library](#4-pattern-library)
    - [4.1 Animated icons that morph](#41-animated-icons-that-morph)
    - [4.2 Component micro-interactions](#42-component-micro-interactions)
+   - [4.3 Feedback & input micro-interactions](#43-feedback--input-micro-interactions)
 5. [Accessibility rules](#5-accessibility-rules)
 6. [Agent checklist](#6-agent-checklist)
 7. [Sources](#7-sources)
@@ -61,6 +62,10 @@
    pointer exactly; animation only starts on release (spring home or commit).
 9. **Arrive with weight.** (SHOULD) Things that land (pins, popovers, toasts) drop in fast and settle with
    1–2 small bounces, then reveal secondary info (labels, tooltips).
+10. **Stagger groups.** (SHOULD) When several sibling items animate together (stars, code digits,
+    reaction emojis, list items), offset each by 70–100 ms so the eye reads them in order.
+11. **Feedback while typing.** (SHOULD) Inputs give live, graded feedback as the user types (strength,
+    validity, count) instead of only on submit.
 
 ---
 
@@ -81,6 +86,9 @@
 | `accent-alt`       | `#2FBCF1` / `#42B9EC` | Accent gradient stops |
 | `warm`             | `#F5BD4F`  | Warm highlight (e.g. sun/light state) (approx.) |
 | `on-accent`        | `#05101F`  | Text on solid accent fills |
+| `danger`           | `#F07A4A`  | Errors, "weak"/"too short" states (approx.) |
+| `warning`          | `#E8C66A`  | "Fair"/caution states (approx.) |
+| `success`          | = `accent` | "Strong"/verified states use the accent blue, not green |
 
 Backgrounds SHOULD use a radial vignette (lighter behind the focal element, darker at the edges) and
 MAY use a very faint square grid texture.
@@ -115,6 +123,8 @@ MAY use a very faint square grid texture.
 | `ease-in-out-strong` | `cubic-bezier(0.83, 0, 0.17, 1)` | Line/track fills (S-curve) |
 | `spring-gentle`    | spring, stiffness ≈ 200, damping ≈ 20 (≈ 5–10% overshoot) | Width changes, list reflow, return-to-origin |
 | `bounce-drop`      | land in 200 ms, then 2 decaying bounces, settle by ~1000 ms | Pins, dropped items |
+| `stagger-tight`    | 70 ms | Offset between dense sibling items (digits, emojis) |
+| `stagger-loose`    | 100 ms | Offset between larger sibling items (stars, cards) |
 
 ---
 
@@ -181,6 +191,26 @@ keyframe strip replaced by a **motion-curve panel**: a dark card titled with the
 target line, a glowing `accent` curve drawn in sync with the animation, a dot at the current point, and
 the total time in the corner (e.g. `TIME · 800 ms`).
 
+### 4.3 Feedback & input micro-interactions
+
+*Source: reference reel "More smooth details, in slow-mo" (Part 4 · 6 new details, see §7).*
+
+**Rules**
+- Apply these behaviors whenever the project contains the matching component, using the tokens in §3
+  and principles 1, 2, 7, 10 and 11 in §2.
+- Staggered items MUST animate in reading order (left → right, top → bottom).
+
+**The six behaviors**
+
+| # | Component | Behavior | Timing / easing |
+|---|---|---|---|
+| 01 | **Star rating** ("Fill them in turn") | Selecting N stars fills them **one after another** from the left, not all at once. Each star turns `warm` (gold, soft glow) and scale-pops past full size then settles; the last star emits a small burst of sparkle dots. A short message ("Great, thanks!") fades in below. Unselected stars stay outlined `fg-muted`. | `stagger-loose` (100 ms apart); each star `ease-spring` (overshoot then settle), ~800 ms total at ¼ speed |
+| 02 | **One-time code / OTP input** ("Drop in, then glow") | Six digit boxes. When a code is entered or auto-filled (e.g. from an SMS suggestion), each digit **drops into its box** from above with a small overshoot, one after another. When all are filled, the boxes' borders **glow `accent`** together and a "✓ Verified" line fades in. | `stagger-tight` (70 ms apart); each digit `spring-gentle`; glow + verified after the last digit settles |
+| 03 | **Accordion** ("Grow, make room") | Opening a section: the chevron **rotates 180°**, the panel **grows in height** (≈ 62 px in the demo) and the content inside fades/slides in, while the sections below **slide down to make room** (never jump). Header of the open section gets an `accent` border. Closing reverses. | height `ease-out` with tiny settle, ~800 ms at ¼ speed (≈ 200–300 ms real); chevron in sync |
+| 04 | **Password strength** ("Grade as you type") | A **4-segment meter** under the field updates on every keystroke. Segments fill one by one and the color grades **red → yellow → blue**: `danger` "Too short"/"Weak", `warning` "Fair", `accent` "Strong". The field border takes the current grade color. A live character count sits on the right ("9 chars"). | each segment fills smoothly (no jumps); color crossfades; ~1 s overall staircase curve |
+| 05 | **To-do / checklist** ("Draw, strike, sink") | Checking an item: the checkbox fills `accent` and the **check mark draws in**, a **strike-through line draws across** the label left → right and the text dims to `fg-muted`, then the item **sinks to the bottom** of the list while the others slide up. Unchecking reverses (item returns, strike undraws). | check + strike **470 ms**; reorder `ease-in-out-strong` / `spring-gentle`, ~1 s to settle |
+| 06 | **Reactions picker** ("Pop, grow, fly") | Long-press/hover on a message opens a pill of emojis that **pop in staggered**. The hovered emoji **grows to 1.6×** and lifts; neighbors stay normal. On select, the emoji **flies** from the picker onto the message bubble's corner and lands as a small badge; the picker collapses. | pop-in `stagger-tight` (70 ms); hover scale 1.6× `ease-spring`; fly + land `spring-gentle` (~1 s) |
+
 ---
 
 ## 5. Accessibility rules
@@ -205,6 +235,8 @@ Before finishing any UI task, confirm:
 - [ ] Any icon matching §4.1 is implemented as described there, in both directions.
 - [ ] Any component matching §4.2 (copy button, text field, stepper, map pin, list delete, photo viewer)
       follows its described behavior; nothing vanishes or jumps (§2.7), drags follow 1:1 (§2.8).
+- [ ] Any component matching §4.3 (star rating, OTP input, accordion, password strength, checklist,
+      reactions) follows its described behavior; sibling items are staggered (§2.10).
 - [ ] Reduced motion, accessible labels and contrast are handled (§5).
 - [ ] No unnecessary dependency was added just for animation.
 
@@ -216,3 +248,4 @@ Before finishing any UI task, confirm:
 |---|---|---|
 | 4.1 Animated icons that morph | Reel "Icons that feel alive" (41 s, portrait) | Derived from frames only; audio not analyzed. Some hex values approximate due to video compression; exact font unknown (Inter is a close match). |
 | 4.2 Component micro-interactions | Reel "More smooth details, in slow-mo" — Part 5 · 6 new details (51 s, portrait) | Same visual style as 4.1 (tokens unchanged). Frames only; audio not analyzed. Durations are the values shown on screen; curve shapes read from the on-screen graphs. Copy-button revert delay is an assumption. |
+| 4.3 Feedback & input micro-interactions | Reel "More smooth details, in slow-mo" — Part 4 · 6 new details (45 s, portrait) | Same visual style. Frames only; audio not analyzed. Durations/staggers are the values shown on screen; `danger`/`warning` hex values approximate. |
